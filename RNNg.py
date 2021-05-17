@@ -1,44 +1,65 @@
 import matplotlib.pyplot as plt
-from generateData import generateSet
-import tensorflow as tf
-from tensorflow.keras.layers.experimental import preprocessing
-import os
-import datetime
-
-import IPython
-import IPython.display
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from generateData import generateSet, ohe
+import tensorflow as tf
+from tensorflow.keras.layers.experimental import preprocessing
+from tensorflow import keras
+from tensorflow.keras import layers
+import os
+import datetime
+import IPython
+import IPython.display
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import tensorflow as tf
+
 
 mpl.rcParams['figure.figsize'] = (8, 6)
 mpl.rcParams['axes.grid'] = False
 
 #meta
-trainSize = 10
+setSize = 10
+batch_size = 5
 ##
 
-trainXY = [generateSet(i, 10, (1,10)) for i in range(1,trainSize)]
+
 
 def buildrnn():
     model = keras.Sequential()
-    # Add an Embedding layer expecting input vocab of size 1000, and
-    # output embedding dimension of size 64.
-    model.add(layers.Embedding(input_dim=1000, output_dim=64))
-
     # Add a LSTM layer with 128 internal units.
-    model.add(layers.LSTM(128))
+    model.add(layers.LSTM(128, input_shape = (batch_size, setSize)))
 
     # Add a Dense layer with 10 units.
-    model.add(layers.Dense(10))
+    model.add(layers.Dense(1))
 
-    model.summary()
 
+    return model
 
 def trainrnn():
-    print(trainXY)
+    model = buildrnn()
+    trainVals = []
+    trainEncs = []
+    #create one batch of data
+    for i in range(batch_size):
+        trainVal, trainEnc = generateSet(i, 11, (1, 10))
+        trainVals.append(trainVal)
+        trainEncs.append(trainEnc)
+
+    trainX = trainEncs
+    trainY = np.array([i[1:] for i in trainX])
+    trainX = np.array([i[:-1] for i in trainX])
+    #print(trainX.shape)
+    #print(trainX)
+    trainX = np.reshape(trainX, (trainX.shape[0], trainX.shape[1], trainX.shape[2]))
+
+    # print(trainVals)
+
+    # print(trainY)
+    #
+    print(trainX.shape)
+    model.compile(optimizer="adam", loss="mse", metrics=["accuracy"])
+    model.fit(trainX,trainY, setSize)
+
 
 trainrnn()
