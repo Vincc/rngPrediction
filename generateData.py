@@ -1,4 +1,5 @@
 import random
+from numpy import array
 
 def ohe(seq, setSize):
     outputseq = []
@@ -14,7 +15,7 @@ def generateSet( size, numrange):
     for i in range(size):
         outputSet.append(random.randint(numrange[0], numrange[1]))
     #
-    return ohe(outputSet, numrange[1]-numrange[0]+1)
+    return array(ohe(outputSet, numrange[1]-numrange[0]+1))
 
 
 
