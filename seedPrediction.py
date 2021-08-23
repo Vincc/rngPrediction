@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from tensorflow.python.ops.gen_batch_ops import batch
 import LFSR
 
-inputSize = 20 #length of preceeding sequence
+inputSize = 50 #length of preceeding sequence
 genRange = 255 #range of numbers generated
 seedVal = random.randint(0,4095) #start of seed value
 batch_size = 300 #number of datasets within each epoch
@@ -71,7 +71,6 @@ model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accur
 X = []
 y = []
 
-
 readstep = 1
 
 modelAccuracy = []
@@ -89,7 +88,7 @@ for i in range(50):
         modelAccuracy.append(sum(tempacc)/len(tempacc))
 # evaluate
 correct = 0
-for i in range(1000): 
+for i in range(100): 
     
     X, y = generateData(1)
     yhat = model.predict(X)
@@ -97,6 +96,8 @@ for i in range(1000):
         correct+=1
     # print("Expected:  %s" % decodeOneHot(y))
     # print("Predicted: %s" % decodeOneHot(yhat))
+    if i %10 == 0:
+        print(i)
 print(correct/1000)
 
 print(history.history.keys())
