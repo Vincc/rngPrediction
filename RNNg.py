@@ -11,9 +11,10 @@ import pandas as pd
 print("packages imported")
 
 #meta
-setSize = 150
-batch_size = 3
+
 iterations = 50
+inputLength = 100
+outputLength = 50
 #####
 
 
@@ -21,8 +22,8 @@ def decode(seq):
     return [np.argmax(i) for i in seq]
 def buildrnn():
     model = keras.Sequential()
-    # Add a LSTM layer with 128 internal units.
-    model.add(layers.SimpleRNN(128, batch_input_shape = (batch_size, 1, 10), stateful=True))
+    # Add a Simple RNN layer with 128 internal units.
+    model.add(layers.SimpleRNN(128, batch_input_shape = (1, 1, 10), stateful=True))
 
     # Add a Dense layer with 10 units.
     model.add(layers.Dense(10, activation='softmax'))
@@ -35,16 +36,11 @@ def buildrnn():
 def generateXy():
     #quantitative input
     #create training data
-    trainEnc = generateSet(setSize+2, (1, 10))
-
-
+    trainEnc = generateSet(inputLength+outputLength, (1, 10)) #Generate a dataset containg values from 1 to 10
+    trainEnc = np.array(ohe(trainEnc, inputLength+outputLength))
     trainX = trainEnc
-    df = pd.DataFrame(trainX)
-    df = pd.concat([df.shift(4), df.shift(3), df.shift(2), df.shift(1), df], axis=1)
-    values = df.values
-    values = values[5:, :]
-    # convert to 3d for input
-    trainX = values.reshape(len(values), 5, 10)
+    t
+    trainX = values.reshape(len(values), 1, 10)
     # drop last value from y
     trainY = trainEnc[4:-1, :]
 
@@ -60,7 +56,6 @@ def generateXy():
     # trainX.shape
 
 def trainrnn():
-
     model = buildrnn()
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
@@ -70,10 +65,13 @@ def trainrnn():
         #print(decode(trainY))
         # print(trainX.shape)
         # print(trainY.shape)
-        model.fit(trainX,trainY, batch_size = batch_size, epochs = 1, verbose = 2)
+        print(trainX.shape)
+        print(trainY.shape)
+        model.fit(trainX,trainY, batch_size = 1, epochs = 1, verbose = 2)
 
     print("done")
     return model
+
 def testmodel(model):
     testX, testY = generateXy()
     print(testX.shape)
