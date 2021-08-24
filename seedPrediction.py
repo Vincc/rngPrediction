@@ -8,11 +8,11 @@ from matplotlib import pyplot as plt
 from tensorflow.python.ops.gen_batch_ops import batch
 import LFSR
 
-inputSize = 50 #length of preceeding sequence
+inputSize = 100 #length of preceeding sequence
 genRange = 255 #range of numbers generated
-seedVal = random.randint(0,4095) #start of seed value
-batch_size = 300 #number of datasets within each epoch
-
+seedVal = np.random.randint(0, high = 4096) #start of seed value
+batch_size = 30 #number of datasets within each epoch
+trainingIterations = 500 #number of training iterations
 
 #generates a set of seeded random intergers  of a certain size within the range(inclusive)
 def generateSet(size):
@@ -44,13 +44,15 @@ def generateData(batchsize):
     y = []
     for i in range(batchsize):
         
-        random.seed(seedVal)
+        
         #generate sequence
 
         #mersene or lsfr
-        #sequence = generateSet(inputSize+1)
-        sequence = generateLFSR(inputSize+1)
-        seedVal = random.randint(0,4095)
+        random.seed(seedVal)
+        sequence = generateSet(inputSize+1)
+        #sequence = generateLFSR(inputSize+1)
+        
+        seedVal = np.random.randint(0, high = 4096)
         
         #one hot encode
         encoded = oneHotEncode(sequence)
@@ -64,9 +66,10 @@ def generateData(batchsize):
 
 # define model
 model = Sequential()
-model.add(SimpleRNN(10, input_shape=(inputSize, genRange)))
+model.add(SimpleRNN(50, input_shape=(inputSize, genRange)))
 model.add(Dense(genRange, activation="softmax"))
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+
 # fit model
 X = []
 y = []
@@ -75,7 +78,7 @@ readstep = 1
 
 modelAccuracy = []
 tempacc = []
-for i in range(50):
+for i in range(trainingIterations):
     
     print(i)
     X, y = generateData(batch_size)    
@@ -83,9 +86,9 @@ for i in range(50):
     print(X.shape)
     print(y.shape)
     history = model.fit(X, y, epochs=1, batch_size=batch_size, verbose=2)
-    tempacc.append(history.history["accuracy"][0])
-    if i%readstep == 0:
-        modelAccuracy.append(sum(tempacc)/len(tempacc))
+    
+    
+    modelAccuracy.append(history.history["accuracy"][0])
 # evaluate
 correct = 0
 for i in range(100): 
@@ -94,22 +97,13 @@ for i in range(100):
     yhat = model.predict(X)
     if decodeOneHot(yhat) == decodeOneHot(y):
         correct+=1
-    # print("Expected:  %s" % decodeOneHot(y))
-    # print("Predicted: %s" % decodeOneHot(yhat))
-    if i %10 == 0:
-        print(i)
-print(correct/1000)
+    print("Expected:  %s" % decodeOneHot(y))
+    print("Predicted: %s" % decodeOneHot(yhat))
+    # if i %10 == 0:
+    #     print(i)
+print(correct/100)
+print(modelAccuracy)
 
-print(history.history.keys())
-plt.plot(modelAccuracy)
-# print(modelAccuracy)
-# axes = plt.gca()
-# axes.set_ylim([0,1])
-plt.title("model accuracy")
-plt.ylabel("accuracy")
-plt.xlabel("epoch")
-plt.legend(["train", "val"], loc="upper left")
-plt.show()
 
 
 
